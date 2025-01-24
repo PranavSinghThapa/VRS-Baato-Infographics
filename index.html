@@ -130,6 +130,65 @@
             transform: translateY(-5px);
         }
 
+        .stat-card canvas {
+            max-height: 400px;
+            padding: 15px;
+        }
+
+        .warning-icon {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: #e74c3c;
+            cursor: help;
+            z-index: 2;
+        }
+
+        /* Desktop hover tooltip */
+@media (hover: hover) {
+    .warning-icon:hover::after {
+        content: "Failed to assign all deliveries (Upper: 5, OptimoRoute: 16)";
+        position: absolute;
+        background: var(--card-background);
+        color: var(--text-dark);
+        padding: 8px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        width: 200px;
+        left: 25px;
+        top: 0;
+        z-index: 1000;
+    }
+}
+
+/* Mobile tooltip (hidden by default) */
+@media (max-width: 768px) {
+    .warning-icon::after {
+        display: none;
+        content: "Failed to assign all deliveries (Upper: 5, OptimoRoute: 16)";
+        position: absolute;
+        background: var(--card-background);
+        color: var(--text-dark);
+        padding: 8px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        width: 200px;
+        left: 25px;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .warning-icon.active::after {
+        display: block !important;
+    }
+}
+
+/* Close button hover fix */
+.close-modal:hover {
+    background: transparent !important;
+    color: inherit !important;
+}
+
         .maximize-btn {
             position: absolute;
             top: 10px;
@@ -140,10 +199,13 @@
             cursor: pointer;
             z-index: 2;
             font-size: 20px;
+            padding: 5px;
+            border-radius: 5px;
         }
 
         .maximize-btn:hover {
-            color: var(--primary);
+            background-color: rgba(96, 156, 133, 0.2);
+            color: var(--primary-dark);
         }
 
         .modal {
@@ -175,6 +237,7 @@
         .modal-chart-container {
             flex: 1;
             min-height: 0;
+            position: relative;
         }
 
         .modal-description {
@@ -182,6 +245,7 @@
             padding: 1rem;
             background: rgba(0,0,0,0.05);
             border-radius: 5px;
+            color: var(--text-dark);
         }
 
         .close-modal {
@@ -195,6 +259,10 @@
             border: none;
             padding: 5px;
         }
+        .close-modal:hover {
+    background: transparent !important;
+    color: inherit !important;
+}
 
         .calculator-section {
             background: var(--card-background);
@@ -283,10 +351,11 @@
             background: rgba(0,0,0,0.05);
             border-radius: 5px;
             line-height: 1.6;
+            color: var(--text-dark);
         }
 
         .show-calculation-link {
-            color: green;
+            color: var(--primary);
             cursor: pointer;
             text-decoration: underline;
             margin-top: 1rem;
@@ -306,7 +375,38 @@
                 width: 95%;
                 height: 90%;
             }
+
+            .warning-icon::after {
+                content: "Competitors to Baato VRS failed to assign all deliveries (Upper: 5, OptimoRoute: 16)";
+                position: absolute;
+                background: var(--card-background);
+                color: var(--text-dark);
+                padding: 8px;
+                border-radius: 4px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                width: 200px;
+                left: 25px;
+                top: 0;
+                z-index: 1000;
+            }
         }
+
+        @media (hover: hover) {
+            .warning-icon:hover::after {
+                content: "Competitors to Baato VRS failed to assign all deliveries (Upper: 5, OptimoRoute: 16)";
+                position: absolute;
+                background: var(--card-background);
+                color: var(--text-dark);
+                padding: 8px;
+                border-radius: 4px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                width: 200px;
+                left: 25px;
+                top: 0;
+                z-index: 1000;
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -319,11 +419,12 @@
 
     <div class="dashboard-header">
         <h1>Baato VRS Performance Dashboard</h1>
-        <p>Leading the Way in Delivery Optimization</p>
+        <p>Smart Delivery Planning For Last-Mile Logistics</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
+            <div class="warning-icon">⚠️</div>
             <h3>Time and Distance Comparison</h3>
             <button class="maximize-btn"><i class="fas fa-expand"></i></button>
             <canvas id="timeDistanceChart"></canvas>
@@ -344,11 +445,13 @@
             <canvas id="costBreakdownChart"></canvas>
         </div>
         <div class="stat-card">
+            <div class="warning-icon">⚠️</div>
             <h3>Performance Metrics</h3>
             <button class="maximize-btn"><i class="fas fa-expand"></i></button>
             <canvas id="performanceMetricsChart"></canvas>
         </div>
         <div class="stat-card">
+            <div class="warning-icon">⚠️</div>
             <h3>Case Comparison</h3>
             <button class="maximize-btn"><i class="fas fa-expand"></i></button>
             <canvas id="caseComparisonChart"></canvas>
@@ -388,6 +491,7 @@
         <div class="modal-content">
             <button class="close-modal">&times;</button>
             <div class="modal-chart-container">
+                <div class="warning-icon">⚠️</div>
                 <canvas id="modalChart"></canvas>
             </div>
             <div class="modal-description"></div>
@@ -395,6 +499,25 @@
     </div>
 
     <script>
+
+        // Warning icon interaction
+document.querySelectorAll('.warning-icon').forEach(icon => {
+    icon.addEventListener('click', function(e) {
+        if(window.innerWidth <= 768) {
+            // Toggle tooltip only on mobile
+            this.classList.toggle('active');
+            e.stopPropagation();
+        }
+    });
+});
+
+// Close tooltips when clicking anywhere
+document.addEventListener('click', () => {
+    document.querySelectorAll('.warning-icon').forEach(icon => {
+        icon.classList.remove('active');
+    });
+});
+
         const themeToggle = document.getElementById('themeToggle');
         themeToggle.addEventListener('change', function() {
             document.body.classList.toggle('dark-mode');
@@ -405,7 +528,7 @@
 
         const chartData = {
             timeDistance: {
-                labels: ['VRS (Both Google)', 'VRS (MB+G Hybrid)', 'VRS (ORS + G)', 'Upper', 'OptimoRoute', 'Circuit', 'Locus'],
+                labels: ['VRS (Both Google)', 'VRS (MB+G Hybrid)', 'VRS (ORS + G)', 'Upper*', 'OptimoRoute*', 'Circuit', 'Locus'],
                 datasets: [{
                     label: 'Total Time (hours)',
                     data: [13.25, 12.95, 12.53, 15.42, 15.42, 15.25, 16.63],
@@ -476,7 +599,7 @@
                 }]
             },
             caseComparison: {
-                labels: ['Baato VRS', 'Upper Route', 'OptimoRoute', 'Circuit', 'Locus'],
+                labels: ['Baato VRS', 'Upper Route*', 'OptimoRoute*', 'Circuit', 'Locus'],
                 datasets: [{
                     label: 'Total Time (hours)',
                     data: [12.95, 15.42, 15.42, 15.25, 16.63],
@@ -490,19 +613,15 @@
         };
 
         const chartDescriptions = {
-            timeDistanceChart: `This chart compares the total time and distance metrics across different VRS configurations.
-                              Baato VRS consistently shows optimal performance with lower total time while maintaining efficient distance coverage.
-                              The data demonstrates how different configurations impact overall delivery efficiency.`,
-            costChart: `Cost comparison across different VRS configurations shows the total operational costs.
-                       The breakdown includes both matrix and directions costs, highlighting the cost-effectiveness of each setup.`,
-            routeEfficiencyChart: `The scatter plot visualizes the relationship between distance and time for each route across different configurations.
-                                  This helps identify the most efficient routes and configurations for specific delivery scenarios.`,
-            costBreakdownChart: `Detailed breakdown of costs showing the distribution between matrix costs and directions costs for each configuration.
-                                This helps in understanding the cost structure and identifying potential areas for optimization.`,
-            performanceMetricsChart: `Radar chart comparing various performance metrics including time efficiency, distance optimization,
-                                    cost effectiveness, vehicle utilization, and delivery coverage across different configurations.`,
-            caseComparisonChart: `Direct comparison of Baato VRS performance against competitors for the specific case of 119 deliveries
-                                 and 64 unique delivery locations, showing superior efficiency in both time and distance metrics.`
+            timeDistanceChart: `Competitors with * failed to assign all deliveries:
+                              Upper (5 unassigned), OptimoRoute (16 unassigned)`,
+            costChart: `Cost comparison between different service configurations`,
+            routeEfficiencyChart: `Route efficiency analysis across different configurations`,
+            costBreakdownChart: `Detailed breakdown of matrix vs directions costs`,
+            performanceMetricsChart: `Performance metrics showing Baato's superior efficiency
+                                    (Competitors average includes unassigned deliveries)`,
+            caseComparisonChart: `Case study comparison with 119 deliveries:
+                                Upper (5 unassigned), OptimoRoute (16 unassigned)`
         };
 
         function createChart(ctx, type, data, options = {}) {
@@ -516,10 +635,49 @@
                     plugins: {
                         legend: {
                             display: true,
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                color: getChartTextColor()
+                            }
+                        }
+                    },
+                    scales: {
+                        ...(options.scales || {}),
+                        x: {
+                            ...(options.scales?.x || {}),
+                            ticks: { color: getChartTextColor() },
+                            title: {
+                                ...(options.scales?.x?.title || {}),
+                                color: getChartTextColor()
+                            }
+                        },
+                        y: {
+                            ...(options.scales?.y || {}),
+                            ticks: { color: getChartTextColor() },
+                            title: {
+                                ...(options.scales?.y?.title || {}),
+                                color: getChartTextColor()
+                            }
                         }
                     }
                 }
+            });
+        }
+
+        function getChartTextColor() {
+            return document.body.classList.contains('dark-mode') ? '#FFFFFF' : '#000000';
+        }
+
+        function updateChartStyles() {
+            const textColor = getChartTextColor();
+            
+            Object.values(charts).forEach(chart => {
+                chart.options.plugins.legend.labels.color = textColor;
+                chart.options.scales.x.ticks.color = textColor;
+                chart.options.scales.x.title.color = textColor;
+                chart.options.scales.y.ticks.color = textColor;
+                chart.options.scales.y.title.color = textColor;
+                chart.update();
             });
         }
 
@@ -702,12 +860,6 @@
             `;
         }
 
-        calculateSavings();
-
-        window.addEventListener('resize', function() {
-            Object.values(charts).forEach(chart => chart.resize());
-        });
-
         function toggleCalculationDetails() {
             const detailsContainer = document.getElementById('calculation-details');
             const toggleLink = document.querySelector('.show-calculation-link');
@@ -719,22 +871,42 @@
                 detailsContainer.style.display = 'block';
                 toggleLink.textContent = 'Hide Calculation Breakdown';
 
-                const deliveries = parseInt(document.getElementById('deliveriesInput').value);
-                const distance = parseInt(document.getElementById('distanceInput').value);
-                const drivers = parseInt(document.getElementById('driversInput').value);
-
                 detailsContainer.innerHTML = `
-                    <h3>Calculation Breakdown</h3>
-                    <p><strong>Key Parameters:</strong></p>
+                    <h3>Calculation Methodology</h3>
+                    <p><strong>Base Parameters (from 119 delivery test case):</strong></p>
                     <ul>
-                        <li>Daily Deliveries: ${deliveries}</li>
-                        <li>Average Route Distance: ${distance} KM</li>
-                        <li>Number of Drivers: ${drivers}</li>
+                        <li>Baato Time: 12h57m (12.95 hours)</li>
+                        <li>Baato Distance: 393km</li>
+                        <li>Competitor Time: 15h25m (15.42 hours average)</li>
+                        <li>Competitor Distance: 455km (Circuit)</li>
                     </ul>
-                    <p>Detailed calculation methodology for potential savings...</p>
+
+                    <p><strong>Key Formulas:</strong></p>
+                    <ol>
+                        <li>Time per Delivery = Total Time / 119 deliveries</li>
+                        <li>Labor Savings = (Competitor Time/Delivery - Baato Time/Delivery) × Deliveries × Drivers × $15/hour</li>
+                        <li>Distance per Delivery = Total Distance / 119 deliveries</li>
+                        <li>Fuel Savings = (Competitor Distance/Delivery - Baato Distance/Delivery) × Deliveries × $0.10/km</li>
+                        <li>Efficiency Improvement = ((Competitor Time - Baato Time) / Competitor Time) × 100</li>
+                    </ol>
+
+                    <p><strong>Example Calculation:</strong></p>
+                    <p>For 119 deliveries:</p>
+                    <ul>
+                        <li>Time Savings = (15.42 - 12.95) = 2.47 hours saved daily</li>
+                        <li>Distance Savings = (455 - 393) = 62km reduced daily</li>
+                        <li>Annual Savings = Daily Savings × 365 × Utilization Rate</li>
+                    </ul>
                 `;
             }
         }
+
+        calculateSavings();
+        updateChartStyles();
+
+        window.addEventListener('resize', function() {
+            Object.values(charts).forEach(chart => chart.resize());
+        });
     </script>
 </body>
 </html>
